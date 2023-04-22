@@ -2,6 +2,7 @@
 
 namespace App\Factory;
 
+use App\Entity\Category;
 use App\Entity\Product;
 use App\Repository\ProductRepository;
 use Zenstruck\Foundry\ModelFactory;
@@ -47,7 +48,8 @@ final class ProductFactory extends ModelFactory
     protected function getDefaults(): array
     {
         return [
-            'sku' => self::faker()->unique()->numerify('SKU-########'),
+            'sku' => \strtoupper(self::faker()->unique()->bothify('???########')),
+            'category' => self::faker()->randomElement(Category::ALL),
         ];
     }
 

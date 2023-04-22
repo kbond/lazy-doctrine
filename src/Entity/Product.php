@@ -18,12 +18,16 @@ class Product
     #[ORM\Column(length: 255, unique: true)]
     private string $sku;
 
+    #[ORM\Column(enumType: Category::class)]
+    private Category $category;
+
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: Purchase::class, orphanRemoval: true)]
     private Collection $purchases;
 
-    public function __construct(string $sku)
+    public function __construct(string $sku, Category $category)
     {
         $this->sku = $sku;
+        $this->category = $category;
         $this->purchases = new ArrayCollection();
     }
 
@@ -35,6 +39,11 @@ class Product
     public function getSku(): string
     {
         return $this->sku;
+    }
+
+    public function getCategory(): Category
+    {
+        return $this->category;
     }
 
     /**
