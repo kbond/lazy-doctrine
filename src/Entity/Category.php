@@ -13,11 +13,13 @@ enum Category : string
     case MUSIC = 'music';
     case TOYS = 'toys';
 
-    public const ALL = [
-        self::BOOKS,
-        self::ELECTRONICS,
-        self::MOVIES,
-        self::MUSIC,
-        self::TOYS,
-    ];
+    public static function values(): array
+    {
+        return \array_column(self::cases(), 'value');
+    }
+
+    public static function random(): self
+    {
+        return self::cases()[\array_rand(self::cases())];
+    }
 }

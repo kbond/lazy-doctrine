@@ -36,17 +36,17 @@ class Purchase
         return $this->id;
     }
 
-    public function getDate(): ?\DateTimeImmutable
+    public function getDate(): \DateTimeImmutable
     {
         return $this->date;
     }
 
-    public function getAmount(): ?string
+    public function getAmount(): float
     {
-        return $this->amount;
+        return (float) $this->amount;
     }
 
-    public function getProduct(): ?Product
+    public function getProduct(): Product
     {
         return $this->product;
     }

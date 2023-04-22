@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "af218a060e675be9e1e51dc100fcb151",
+    "content-hash": "c82474dd1872808e5e6504ddea0820ae",
     "packages": [
         {
             "name": "doctrine/annotations",
@@ -1558,6 +1558,70 @@
                 }
             ],
             "time": "2023-02-06T13:46:10+00:00"
+        },
+        {
+            "name": "ocramius/doctrine-batch-utils",
+            "version": "2.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Ocramius/DoctrineBatchUtils.git",
+                "reference": "b83e0a6132594aa19db2d12bbe7cb9df3b12b509"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Ocramius/DoctrineBatchUtils/zipball/b83e0a6132594aa19db2d12bbe7cb9df3b12b509",
+                "reference": "b83e0a6132594aa19db2d12bbe7cb9df3b12b509",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/orm": "^2.13.3",
+                "doctrine/persistence": "^3.0.4",
+                "php": "~8.1.0 || ~8.2.0"
+            },
+            "require-dev": {
+                "doctrine/annotations": "^1.13.3",
+                "doctrine/coding-standard": "^10.0.0",
+                "doctrine/dbal": "^3.5.1",
+                "phpunit/phpunit": "^9.5.26",
+                "roave/infection-static-analysis-plugin": "^1.25.0",
+                "vimeo/psalm": "^4.29.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "DoctrineBatchUtils\\": "src/DoctrineBatchUtils"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Marco Pivetta",
+                    "email": "ocramius@gmail.com",
+                    "homepage": "http://ocramius.github.io/"
+                }
+            ],
+            "description": "A set of utilities to operate with Doctrine ORM's batch processing functionality",
+            "homepage": "https://github.com/Ocramius/DoctrineBatchUtils",
+            "keywords": [
+                "batch processing",
+                "doctrine",
+                "doctrine2",
+                "orm"
+            ],
+            "support": {
+                "issues": "https://github.com/Ocramius/DoctrineBatchUtils/issues",
+                "source": "https://github.com/Ocramius/DoctrineBatchUtils/tree/2.5.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/Ocramius",
+                    "type": "github"
+                }
+            ],
+            "time": "2022-10-31T12:03:42+00:00"
         },
         {
             "name": "phpdocumentor/reflection-common",
@@ -7285,96 +7349,52 @@
             "time": "2022-06-03T18:03:27+00:00"
         },
         {
-            "name": "zenstruck/callback",
-            "version": "v1.5.0",
+            "name": "zenstruck/collection",
+            "version": "v0.1.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/zenstruck/callback.git",
-                "reference": "eed9a532fd8974368e60c4a2550ed65eab7e5432"
+                "url": "https://github.com/zenstruck/collection.git",
+                "reference": "6452962bf37092015476f0564a6b06f7697ab85f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zenstruck/callback/zipball/eed9a532fd8974368e60c4a2550ed65eab7e5432",
-                "reference": "eed9a532fd8974368e60c4a2550ed65eab7e5432",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.2.5",
-                "symfony/polyfill-php80": "^1.14"
-            },
-            "require-dev": {
-                "symfony/phpunit-bridge": "^5.2"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Zenstruck\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Kevin Bond",
-                    "email": "kevinbond@gmail.com"
-                }
-            ],
-            "description": "Callable wrapper to validate and inject arguments.",
-            "homepage": "https://github.com/zenstruck/callback",
-            "keywords": [
-                "callable",
-                "callback",
-                "utility"
-            ],
-            "support": {
-                "issues": "https://github.com/zenstruck/callback/issues",
-                "source": "https://github.com/zenstruck/callback/tree/v1.5.0"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/kbond",
-                    "type": "github"
-                }
-            ],
-            "time": "2022-08-31T14:56:15+00:00"
-        },
-        {
-            "name": "zenstruck/console-extra",
-            "version": "v1.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/zenstruck/console-extra.git",
-                "reference": "a3252e6589da3378f1ecfee36171e9fc863eb457"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/zenstruck/console-extra/zipball/a3252e6589da3378f1ecfee36171e9fc863eb457",
-                "reference": "a3252e6589da3378f1ecfee36171e9fc863eb457",
+                "url": "https://api.github.com/repos/zenstruck/collection/zipball/6452962bf37092015476f0564a6b06f7697ab85f",
+                "reference": "6452962bf37092015476f0564a6b06f7697ab85f",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.0",
-                "symfony/console": "^5.4|^6.0",
-                "symfony/deprecation-contracts": "^2.2|^3.0",
-                "symfony/string": "^5.4|^6.0",
-                "zenstruck/callback": "^1.4.2"
+                "symfony/polyfill-php81": "^1.24"
             },
             "require-dev": {
-                "phpdocumentor/reflection-docblock": "^5.2",
+                "composer-runtime-api": "^2.0",
+                "doctrine/annotations": "^1.11",
+                "doctrine/collections": "^1.6",
+                "doctrine/dbal": "^2.12|^3.0",
+                "doctrine/doctrine-bundle": "^2.0",
+                "doctrine/orm": "^2.10",
+                "pagerfanta/pagerfanta": "^1.0|^2.0|^3.0",
                 "phpstan/phpstan": "^1.4",
-                "phpunit/phpunit": "^9.5",
-                "symfony/framework-bundle": "^5.4|^6.0",
-                "symfony/phpunit-bridge": "^6.2",
-                "symfony/process": "^5.4|^6.0",
-                "symfony/var-dumper": "^5.4|^6.0",
-                "zenstruck/console-test": "^1.3"
+                "phpunit/phpunit": "^9.5.0",
+                "symfony/cache": "^4.4|^5.0|^6.0",
+                "symfony/phpunit-bridge": "^6.0",
+                "symfony/var-dumper": "^4.4|^5.0|^6.0"
+            },
+            "suggest": {
+                "doctrine/collections": "To use CollectionDecorator.",
+                "doctrine/dbal": "To use DBAL implementation.",
+                "doctrine/orm": "To use ORM implementation and batch utilities (>=2.10).",
+                "pagerfanta/pagerfanta": "To use CollectionAdapter."
             },
             "type": "library",
             "autoload": {
+                "files": [
+                    "src/functions.php"
+                ],
                 "psr-4": {
-                    "Zenstruck\\Console\\": "src/"
+                    "Zenstruck\\": [
+                        "src/"
+                    ]
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -7387,16 +7407,21 @@
                     "email": "kevinbond@gmail.com"
                 }
             ],
-            "description": "A modular set of features to reduce configuration boilerplate for your Symfony commands.",
-            "homepage": "https://github.com/zenstruck/console-extra",
+            "description": "Helpers for iterating/paginating/filtering collections (with Doctrine ORM/DBAL implementations and batch processing utilities).",
+            "homepage": "https://github.com/zenstruck/collection",
             "keywords": [
-                "command",
-                "console",
-                "symfony"
+                "batch",
+                "collection",
+                "dbal",
+                "doctrine",
+                "iterate",
+                "orm",
+                "pager",
+                "paginate"
             ],
             "support": {
-                "issues": "https://github.com/zenstruck/console-extra/issues",
-                "source": "https://github.com/zenstruck/console-extra/tree/v1.2.0"
+                "issues": "https://github.com/zenstruck/collection/issues",
+                "source": "https://github.com/zenstruck/collection/tree/v0.1.0"
             },
             "funding": [
                 {
@@ -7404,7 +7429,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-03-23T15:35:54+00:00"
+            "time": "2023-01-16T19:53:23+00:00"
         }
     ],
     "packages-dev": [
@@ -9967,6 +9992,62 @@
                 }
             ],
             "time": "2023-04-17T15:45:16+00:00"
+        },
+        {
+            "name": "zenstruck/callback",
+            "version": "v1.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zenstruck/callback.git",
+                "reference": "eed9a532fd8974368e60c4a2550ed65eab7e5432"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/zenstruck/callback/zipball/eed9a532fd8974368e60c4a2550ed65eab7e5432",
+                "reference": "eed9a532fd8974368e60c4a2550ed65eab7e5432",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.5",
+                "symfony/polyfill-php80": "^1.14"
+            },
+            "require-dev": {
+                "symfony/phpunit-bridge": "^5.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Zenstruck\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kevin Bond",
+                    "email": "kevinbond@gmail.com"
+                }
+            ],
+            "description": "Callable wrapper to validate and inject arguments.",
+            "homepage": "https://github.com/zenstruck/callback",
+            "keywords": [
+                "callable",
+                "callback",
+                "utility"
+            ],
+            "support": {
+                "issues": "https://github.com/zenstruck/callback/issues",
+                "source": "https://github.com/zenstruck/callback/tree/v1.5.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/kbond",
+                    "type": "github"
+                }
+            ],
+            "time": "2022-08-31T14:56:15+00:00"
         },
         {
             "name": "zenstruck/foundry",

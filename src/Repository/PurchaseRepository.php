@@ -5,6 +5,11 @@ namespace App\Repository;
 use App\Entity\Purchase;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use DoctrineBatchUtils\BatchProcessing\SelectBatchIteratorAggregate;
+use DoctrineBatchUtils\BatchProcessing\SimpleBatchIteratorAggregate;
+use Zenstruck\Collection\Doctrine\Batch\CountableBatchIterator;
+use Zenstruck\Collection\Doctrine\Batch\CountableBatchProcessor;
+use Zenstruck\Collection\Doctrine\ORM\Result;
 
 /**
  * @extends ServiceEntityRepository<Purchase>
@@ -21,46 +26,31 @@ class PurchaseRepository extends ServiceEntityRepository
         parent::__construct($registry, Purchase::class);
     }
 
-    public function save(Purchase $entity, bool $flush = false): void
+    public function batchProcessor(int $chunk = 100): SimpleBatchIteratorAggregate
     {
-        $this->getEntityManager()->persist($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
+        return SimpleBatchIteratorAggregate::fromQuery($this->createQueryBuilder('p')->getQuery(), $chunk);
     }
 
-    public function remove(Purchase $entity, bool $flush = false): void
+    public function batchIterator(int $chunk = 100): SelectBatchIteratorAggregate
     {
-        $this->getEntityManager()->remove($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
+        return SelectBatchIteratorAggregate::fromQuery($this->createQueryBuilder('p')->getQuery(), $chunk);
     }
 
-//    /**
-//     * @return Purchase[] Returns an array of Purchase objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('p')
-//            ->andWhere('p.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('p.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function countableBatchProcessor(int $chunk = 100): CountableBatchProcessor
+    {
+        return CountableBatchProcessor::for(
+            new Result($this->createQueryBuilder('p')),
+            $this->_em,
+            $chunk,
+        );
+    }
 
-//    public function findOneBySomeField($value): ?Purchase
-//    {
-//        return $this->createQueryBuilder('p')
-//            ->andWhere('p.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    public function countableBatchIterator(int $chunk = 100): CountableBatchIterator
+    {
+        return CountableBatchIterator::for(
+            new Result($this->createQueryBuilder('p')),
+            $this->_em,
+            $chunk,
+        );
+    }
 }

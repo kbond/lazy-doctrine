@@ -49,7 +49,7 @@ final class ProductFactory extends ModelFactory
     {
         return [
             'sku' => \strtoupper(self::faker()->unique()->bothify('???########')),
-            'category' => self::faker()->randomElement(Category::ALL),
+            'category' => self::faker()->randomElement(Category::cases()),
         ];
     }
 
