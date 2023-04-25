@@ -18,6 +18,9 @@ class Product
     #[ORM\Column(length: 255, unique: true)]
     private string $sku;
 
+    #[ORM\Column]
+    private int $stock = 0;
+
     #[ORM\Column(enumType: Category::class)]
     private Category $category;
 
@@ -66,5 +69,15 @@ class Product
     public function getLazyPurchases(): Collection
     {
         return $this->lazyPurchases;
+    }
+
+    public function getStock(): int
+    {
+        return $this->stock;
+    }
+
+    public function setStock(int $quantity): void
+    {
+        $this->stock = $quantity;
     }
 }
