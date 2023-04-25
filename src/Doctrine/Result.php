@@ -8,6 +8,9 @@ use Doctrine\ORM\Tools\Pagination\Paginator;
 
 /**
  * @author Kevin Bond <kevinbond@gmail.com>
+ *
+ * @template T of object
+ * @implements \IteratorAggregate<T>
  */
 final class Result implements \IteratorAggregate, \Countable
 {
