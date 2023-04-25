@@ -26,4 +26,23 @@ class PurchaseRepository extends ServiceEntityRepository
     {
         return new Result($this->createQueryBuilder('p'));
     }
+
+    public function between(?\DateTimeInterface $from = null, ?\DateTimeInterface $to = null): Result
+    {
+        $qb = $this->createQueryBuilder('p');
+
+        if ($from) {
+            $qb->andWhere('p.date >= :from')
+                ->setParameter('from', $from)
+            ;
+        }
+
+        if ($to) {
+            $qb->andWhere('p.date <= :to')
+                ->setParameter('to', $to)
+            ;
+        }
+
+        return new Result($qb);
+    }
 }
