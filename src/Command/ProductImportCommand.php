@@ -2,30 +2,41 @@
 
 namespace App\Command;
 
+use App\Doctrine\BatchProcessor;
 use App\Entity\Category;
 use App\Entity\Product;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Zenstruck\Collection\Doctrine\Batch\BatchProcessor;
 
 #[AsCommand(
     name: 'product:import',
 )]
 class ProductImportCommand extends BaseCommand
 {
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    private const INEFFICIENT = 'inefficient';
+    private const MORE_EFFICIENT = 'more-efficient';
+    private const EFFICIENT = 'efficient';
+    private const TYPES = [
+        self::INEFFICIENT,
+        self::MORE_EFFICIENT,
+        self::EFFICIENT,
+    ];
+
+    protected function configure(): void
     {
-        $io = new SymfonyStyle($input, $output);
+        $this
+            ->addArgument('type', null, '', self::INEFFICIENT, self::TYPES)
+        ;
+    }
 
-        $this->efficientBatchProcess($io);
-
-        $io->comment('<info>Queries</info>: '.count($this->queryCounter));
-
-        return Command::SUCCESS;
+    protected function executeCommand(InputInterface $input, SymfonyStyle $io): void
+    {
+        match($input->getArgument('type')) {
+            self::EFFICIENT => $this->efficientBatchProcess($io),
+            self::MORE_EFFICIENT => $this->moreEfficientBatchProcess($io),
+            default => $this->inefficientBatchProcess($io),
+        };
     }
 
     private function inefficientBatchProcess(SymfonyStyle $io): void
@@ -49,7 +60,7 @@ class ProductImportCommand extends BaseCommand
 
     private function efficientBatchProcess(SymfonyStyle $io): void
     {
-        $processor = BatchProcessor::for($this->products(), $this->em, 500);
+        $processor = new BatchProcessor($this->products(), $this->em, 500);
 
         foreach ($io->progressIterate($processor) as $product) {
             /** @var Product $product */
@@ -59,7 +70,7 @@ class ProductImportCommand extends BaseCommand
 
     private function products(): iterable
     {
-        foreach (range(1, 500) as $i) {
+        foreach (range(1, 1000) as $i) {
             yield new Product(\random_int(1, 1000000000), Category::random());
         }
     }

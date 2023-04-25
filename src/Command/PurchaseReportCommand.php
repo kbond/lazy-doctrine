@@ -6,7 +6,6 @@ use App\Entity\Purchase;
 use Doctrine\Common\Collections\Criteria;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
@@ -16,17 +15,15 @@ class PurchaseReportCommand extends BaseCommand
 {
     private const ALL = 'all';
     private const SELECT = 'select';
+    private const LAZY = 'lazy';
     private const BATCH_PROCESS = 'batch-process';
     private const BATCH_ITERATE = 'batch-iterate';
-    private const COUNTABLE_BATCH_PROCESS = 'countable-batch-process';
-    private const COUNTABLE_BATCH_ITERATE = 'countable-batch-iterate';
     private const TYPES = [
         self::ALL,
         self::SELECT,
+        self::LAZY,
         self::BATCH_PROCESS,
         self::BATCH_ITERATE,
-        self::COUNTABLE_BATCH_PROCESS,
-        self::COUNTABLE_BATCH_ITERATE,
     ];
 
     protected function configure(): void
@@ -36,18 +33,12 @@ class PurchaseReportCommand extends BaseCommand
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output): int
+    protected function executeCommand(InputInterface $input, SymfonyStyle $io): void
     {
-        $io = new SymfonyStyle($input, $output);
-
         foreach ($io->progressIterate($this->iterator($input->getArgument('type'))) as $purchase) {
             /** @var Purchase $purchase */
             // process
         }
-
-        $io->comment('<info>Queries</info>: '.count($this->queryCounter));
-
-        return self::SUCCESS;
     }
 
     private function iterator(string $type): iterable
@@ -55,10 +46,9 @@ class PurchaseReportCommand extends BaseCommand
         $repo = $this->em->getRepository(Purchase::class);
 
         return match($type) {
-            self::COUNTABLE_BATCH_PROCESS => $repo->countableBatchProcessor(),
-            self::COUNTABLE_BATCH_ITERATE => $repo->countableBatchIterator(),
-            self::BATCH_PROCESS => $repo->batchProcessor(),
-            self::BATCH_ITERATE => $repo->batchIterator(),
+            self::BATCH_PROCESS => $repo->all()->batchProcess(),
+            self::BATCH_ITERATE => $repo->all()->batchIterate(),
+            self::LAZY => $repo->all(),
             self::SELECT => $repo->matching(new Criteria()),
             default => $repo->findAll(),
         };

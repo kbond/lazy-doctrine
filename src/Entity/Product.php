@@ -22,13 +22,19 @@ class Product
     private Category $category;
 
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: Purchase::class, orphanRemoval: true)]
+    #[ORM\OrderBy(['date' => 'DESC'])]
     private Collection $purchases;
+
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Purchase::class, fetch: 'EXTRA_LAZY', orphanRemoval: true)]
+    #[ORM\OrderBy(['date' => 'DESC'])]
+    private Collection $lazyPurchases;
 
     public function __construct(string $sku, Category $category)
     {
         $this->sku = $sku;
         $this->category = $category;
         $this->purchases = new ArrayCollection();
+        $this->lazyPurchases = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -54,25 +60,11 @@ class Product
         return $this->purchases;
     }
 
-    public function addPurchase(Purchase $purchase): self
+    /**
+     * @return Collection<int, Purchase>
+     */
+    public function getLazyPurchases(): Collection
     {
-        if (!$this->purchases->contains($purchase)) {
-            $this->purchases->add($purchase);
-            $purchase->setProduct($this);
-        }
-
-        return $this;
-    }
-
-    public function removePurchase(Purchase $purchase): self
-    {
-        if ($this->purchases->removeElement($purchase)) {
-            // set the owning side to null (unless already changed)
-            if ($purchase->getProduct() === $this) {
-                $purchase->setProduct(null);
-            }
-        }
-
-        return $this;
+        return $this->lazyPurchases;
     }
 }

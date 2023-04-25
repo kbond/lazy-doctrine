@@ -10,14 +10,24 @@ use Doctrine\DBAL\Logging\SQLLogger;
 final class QueryCounter implements SQLLogger, \Countable
 {
     private int $count = 0;
+    private bool $transaction = false;
 
     public function startQuery($sql, ?array $params = null, ?array $types = null): void
     {
+        if ('"START TRANSACTION"' === $sql) {
+            $this->transaction = true;
+        }
+
+        if ('"COMMIT"' === $sql) {
+            $this->transaction = false;
+        }
     }
 
     public function stopQuery(): void
     {
-        ++$this->count;
+        if (!$this->transaction) {
+            ++$this->count;
+        }
     }
 
     public function count(): int
