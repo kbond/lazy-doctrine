@@ -23,6 +23,7 @@
   --dracula-purple:#bd93f9;
   --dracula-red: #ff5555;
   --dracula-yellow: #f1fa8c;
+  --zs-orange: #F38B34;
 }
 
 .hljs {
@@ -125,7 +126,7 @@ h4,
 h5,
 h6 {
   margin: 0.5em 0 0 0;
-  color: var(--dracula-pink);
+  color: var(--zs-orange);
 }
 h1 strong,
 h2 strong,
@@ -283,7 +284,7 @@ section footer,
 section section::after,
 section blockquote::before,
 section blockquote::after {
-  color: var(--dracula-comment);
+  color: var(--zs-faded);
 }
 section table th,
 section table td {
@@ -315,16 +316,23 @@ header {
   left: 0;
   right: 0;
   top: 0;
+  color: rgba(248, 248, 242, 0.2);
 }
 
 footer {
   left: 0;
   right: 0;
   bottom: 0;
+  color: rgba(248, 248, 242, 0.5);
 }
 
 section::after {
   right: 0;
   bottom: 0;
   font-size: 80%;
+  color: rgba(248, 248, 242, 0.5);
+}
+
+section.lead footer {
+  color: rgba(248, 248, 242, 0.1);
 }
