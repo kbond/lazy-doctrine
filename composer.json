@@ -80,7 +80,8 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
-        ]
+        ],
+        "marp": "marp slides.md --theme slides/dracula.css --watch"
     },
     "conflict": {
         "symfony/symfony": "*"
