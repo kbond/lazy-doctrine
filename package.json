@@ -1,10 +1,11 @@
 {
   "scripts": {
-    "html": "marp slides.md",
+    "html": "npx marp slides.md",
     "watch": "npm run html -- --watch",
     "pdf": "npm run html -- --pdf"
   },
   "dependencies": {
+    "@marp-team/marp-cli": "^2.5.0",
     "markdown-it-shiki": "^0.8.1"
   }
 }

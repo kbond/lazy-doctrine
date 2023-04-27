@@ -20,7 +20,7 @@ _by Kevin Bond_
 
 # Me?
 
-- From Ontario, Canada
+- From Ontario, Canada :canada:
 - Husband, father of three
 - Symfony user since `1.0`
 - Symfony Core Team
