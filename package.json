@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "html": "marp slides.md",
+    "watch": "npm run html -- --watch",
+    "pdf": "npm run html -- --pdf"
+  },
+  "dependencies": {
+    "markdown-it-shiki": "^0.8.1"
+  }
+}

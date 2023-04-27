@@ -1,4 +1,6 @@
 /slides.html
+/slides.pdf
+/node_modules
 
 ###> symfony/framework-bundle ###
 /.env.local
