@@ -336,3 +336,9 @@ section::after {
 section.lead footer {
   color: rgba(248, 248, 242, 0.1);
 }
+
+section.title-slide {
+  display: flex;
+  justify-content: center; /* Align horizontal */
+  align-items: center; /* Align vertical */
+}
