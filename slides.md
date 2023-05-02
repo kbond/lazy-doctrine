@@ -351,7 +351,7 @@ header: Teaching Doctrine to be Lazy - Part 3: Batch Processing (Delete)
 
 ```php
 $query = $this->createQueryBuilder('p')
-    ->where('p.purchasedAt <= :date')
+    ->where('p.date <= :date')
     ->setParameter('date', new \DateTime('-90 days'))
     ->getQuery();
 ;
@@ -425,15 +425,152 @@ foreach ($processor as $product) {
 # Part 4: Lazy Relationships
 
 <!--
-_class: title-slide
 header: Teaching Doctrine to be Lazy
 -->
 
-## todo
+* `product:report` Command
+  * Loop over all products (using our `BatchIterator`)
+  * For each product
+    * Fetch details on the most recent purchase
+    * Fetch number of purchases in the last 30 days
+  * Some products have 10,000+ purchases
+
+## Command Code
 
 <!--
 header: Teaching Doctrine to be Lazy - Part 4: Lazy Relationships
 -->
+
+```php
+foreach ($products as $product) {
+    /** @var Product $product */
+    /** @var Collection&Selectable $purchases */
+    $purchases = $product->getPurchases();
+    $last30Days = Criteria::create()->where(
+        Criteria::expr()->gte('date', new \DateTimeImmutable('-30 days'))
+    );
+
+    $this->addToReport(
+        $product->getSku(),
+        $purchases->first() ?: null, // most recent purchase
+        $purchases->matching($last30Days)->count(),
+    );
+}
+```
+
+## Standard One-to-Many Relationship
+
+```php
+#[ORM\Entity]
+class Product
+{
+    #[ORM\OneToMany(mappedBy: 'product', targetEntity: Purchase::class)]
+    #[ORM\OrderBy(['date' => 'DESC'])]
+    private Collection $purchases;
+
+    public function getPurchases(): Collection
+    {
+        return $this->purchases;
+    }
+}
+```
+
+## Standard One-to-Many Relationship
+
+```php
+$purchases = $product->getPurchases();
+
+$purchases->count(); // initializes entire collection
+$purchases->first(); // initializes entire collection
+$purchases->slice(0, 10); // initializes entire collection
+
+foreach ($purchases as $purchase) {
+    // initializes entire collection
+}
+```
+
+## Standard One-to-Many Relationship
+
+```
+ 1000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 6 secs 128.0 MiB
+
+ // Time: 6 secs, Queries: 1001
+```
+
+## _Extra Lazy_ One-to-Many Relationship
+
+```php
+#[ORM\Entity]
+class Product
+{
+    #[ORM\OneToMany(
+        mappedBy: 'product',
+        targetEntity: Purchase::class,
+        fetch: 'EXTRA_LAZY', // !!!
+    )]
+    #[ORM\OrderBy(['date' => 'DESC'])]
+    private Collection $purchases;
+}
+```
+
+## _Extra Lazy_ One-to-Many Relationship
+
+Assuming the collection hasn't been _previously initialized_,
+Certain methods create new queries:
+
+```php
+$purchases = $product->getPurchases();
+
+$purchases->count(); // creates an additional "count" query
+$purchases->first(); // initializes entire collection !!
+$purchases->slice(0, 10); // creates an additional "slice" query
+
+foreach ($purchases as $purchase) {
+    // initializes entire collection
+}
+```
+
+## _Extra Lazy_ One-to-Many Relationship
+
+More efficient `first()`:
+
+```php
+$purchases = $product->getPurchases();
+
+$purchases->slice(0, 1)[0] ?? null;
+```
+
+## Updated Command Code
+
+```php
+foreach ($products as $product) {
+    // ...
+
+    $this->addToReport(
+        $product->getSku(),
+        $purchases->slice(0, 1)[0] ?? null, // most recent purchase
+        $purchases->matching($last30Days)->count(),
+    );
+}
+```
+
+## _Extra Lazy_ One-to-Many Relationship
+
+```
+ 1000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓]  1 sec 18.0 MiB
+
+ // Time: 1 sec, Queries: 2001
+```
+
+## n+x Problem?
+
+* _...it depends..._
+* fetch joins?
+  * Can kill performance (I know from experience)
+  * Saving the number of queries _at all costs_ is not always the best solution
+* If the collection has many items, hydration will be more
+  expensive than the extra queries
+* Evaluate your models
 
 # Part 5: Alternate `ObjectRepository`
 
@@ -467,6 +604,8 @@ header: Teaching Doctrine to be Lazy - Part 6: Future Ideas
 header: Teaching Doctrine to be Lazy
 -->
 
+- `@kbond` on GitHub/Slack
+- `@zenstruck` on Twitter
 - Sample Code: [https://github.com/kbond/lazy-doctrine](https://github.com/kbond/lazy-doctrine)
 - [`zenstruck/collection`](https://github.com/zenstruck/collection)
 

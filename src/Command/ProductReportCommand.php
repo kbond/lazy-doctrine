@@ -2,7 +2,9 @@
 
 namespace App\Command;
 
+use App\Doctrine\BatchIterator;
 use App\Entity\Product;
+use App\Entity\Purchase;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Selectable;
@@ -33,7 +35,7 @@ class ProductReportCommand extends BaseCommand
 
     private function standard(SymfonyStyle $io): void
     {
-        $products = $this->em->getRepository(Product::class)->all()->batchIterate();
+        $products = $this->allProducts();
 
         foreach ($io->progressIterate($products) as $product) {
             /** @var Product $product */
@@ -53,7 +55,7 @@ class ProductReportCommand extends BaseCommand
 
     private function lazy(SymfonyStyle $io): void
     {
-        $products = $this->em->getRepository(Product::class)->all()->batchIterate();
+        $products = $this->allProducts();
 
         foreach ($io->progressIterate($products) as $product) {
             /** @var Product $product */
@@ -69,5 +71,10 @@ class ProductReportCommand extends BaseCommand
                 ->count()
             ;
         }
+    }
+
+    private function allProducts(): iterable
+    {
+        return new BatchIterator($this->em->getRepository(Product::class)->createQueryBuilder('p')->getQuery()->toIterable(), $this->em);
     }
 }

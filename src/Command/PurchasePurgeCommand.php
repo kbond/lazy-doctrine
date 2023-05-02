@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Doctrine\BatchProcessor;
 use App\Entity\Purchase;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,19 +18,18 @@ class PurchasePurgeCommand extends BaseCommand
 {
     protected function executeCommand(InputInterface $input, SymfonyStyle $io): void
     {
-        $processor = $this->em
-            ->getRepository(Purchase::class)
-            ->between(to: new \DateTimeImmutable('-90 days'))
-            ->batchProcess()
+        $query = $this->em->getRepository(Purchase::class)
+            ->createQueryBuilder('p')
+            ->where('p.date <= :date')
+            ->setParameter('date', new \DateTime('-90 days'))
+            ->getQuery();
         ;
-        $count = 0;
+
+        $processor = new BatchProcessor($query->toIterable(), $this->em);
 
         foreach ($io->progressIterate($processor) as $purchase) {
             /** @var Purchase $purchase */
             $this->em->remove($purchase);
-            ++$count;
         }
-
-        $io->success(sprintf('Purged %d purchases', $count));
     }
 }
