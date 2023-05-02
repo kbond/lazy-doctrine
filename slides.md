@@ -99,13 +99,13 @@ With some tweaks, this should/could apply to any `doctrine/persistence` implemen
 header: Teaching Doctrine to be Lazy - Part 1: Hydration Considerations
 -->
 
-* Blackfire.io `metrics.doctrine.entities.hydrated`
 * Web Profiler?
   * ![query profiler](slides/profiler-query.png)
   * [`debesha/doctrine-hydration-profiler-bundle`](https://github.com/debesha/DoctrineProfileExtraBundle)
   * DoctrineBundle?
     * Needs a hook in [`doctrine/orm`](https://github.com/doctrine/orm/pull/9545)
     * ![hydration profiler](slides/profiler-hydrations.png)
+* Blackfire.io `metrics.doctrine.entities.hydrated`
 
 # Part 2: Batch Iterating
 
