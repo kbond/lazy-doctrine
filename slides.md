@@ -579,11 +579,136 @@ _class: title-slide
 header: Teaching Doctrine to be Lazy
 -->
 
-## todo
+## `ObjectRepository` Interface
 
 <!--
 header: Teaching Doctrine to be Lazy - Part 5: Alternate ObjectRepository
 -->
+
+```php
+/**
+ * @template T of object
+ * @extends \IteratorAggregate<T>
+ */
+interface ObjectRepository extends \IteratorAggregate, \Countable
+{
+    public function find(mixed $specification): T|null;
+
+    /**
+     * @return Result<T>
+     */
+    public function filter(mixed $specification): Result;
+}
+```
+
+## `Result` Interface
+
+```php
+/**
+ * @template T of object
+ * @extends \IteratorAggregate<T>
+ */
+interface Result extends \IteratorAggregate, \Countable
+{
+    public function first(): T|null;
+
+    public function process(int $chunkSize = 100): BatchProcessor
+}
+```
+
+## ORM `ObjectRepository::find()`
+
+- `$specification` can be:
+  - `array<string,mixed>`: works like `findOneBy()`
+  - `scalar`: works like `find()`
+  - `Criteria`: works like `matching()` but returns a single result
+  - `callable(QueryBuilder,string):void`: custom query and returns a single result
+
+## ORM `ObjectRepository::filter()`
+
+- `$specification` can be:
+    - `array<string,mixed>`: works like `findBy()`
+    - `Criteria`: works like `matching()`
+    - `callable(QueryBuilder,string):void`: custom query
+
+## Using the `$specification` callable
+
+```php
+$purchases = $repo->filter(
+    function(QueryBuilder $qb, string $root) use ($newerThan) {
+        $qb->where("{$root}.date > :newerThan")
+            ->setParameter('newerThan', $newerThan)
+        ;
+    }
+);
+```
+
+## Specification Objects
+
+While you _could_ extend this `ObjectRepository` to add your methods,
+because `filter()` and `find()` accept `callable(QueryBuilder)`,
+you can create invokable specification objects instead.
+
+## `Between` Specification
+
+```php
+final class Between
+{
+    public function __invoke(QueryBuilder $qb, string $root): void
+    {
+        if ($this->from) {
+            $qb->andWhere("{$root}.date >= :from")
+                ->setParameter('from', $this->from)
+            ;
+        }
+
+        // "to" logic...
+    }
+}
+```
+
+## Use `Between` Specification
+
+```php
+/** @var Result<Purchase> $purchases */
+$purchases = $productsRepo->filter(
+    new Between('2021-01-01', '2021-12-31')
+);
+```
+
+## Inject as a Service
+
+```php
+public function someAction(EntityRepositoryFactory $factory)
+{
+    /** @var ObjectRepository<Product> $repo */
+    $repo = $factory->create(Product::class);
+
+    $product = $repo->find(6);
+    $product = $repo->find(['sku' => 'ABC123']);
+    $product = $repo->find(function(QueryBuilder $qb) {
+        $qb->where('...');
+    });
+}
+```
+
+## Inject as a Service (Symfony 6.3+)
+
+```php
+/**
+ * @param ObjectRepository<Product> $repo
+ */
+public function someAction(
+    #[ForClass(Product::class)] // extends "Autowire"
+    ObjectRepository $repo,
+) {
+    $product = $repo->find(6);
+    $product = $repo->find(['sku' => 'ABC123']);
+    $product = $repo->find(function(QueryBuilder $qb) {
+        $qb->where('...');
+    });
+}
+```
 
 # Part 6: Future Ideas
 
@@ -592,11 +717,47 @@ _class: title-slide
 header: Teaching Doctrine to be Lazy
 -->
 
-## todo
+## _More Lazy_ Doctrine Collection
 
 <!--
 header: Teaching Doctrine to be Lazy - Part 6: Future Ideas
 -->
+
+```php
+// override Collection::filter() to optionally accept callable(Criteria)
+$purchases = $product->getPurchases()
+    ->filter(new Between(from: new \DateTimeImmutable('-1 year'))
+);
+
+foreach ($purchases as $purchase) {
+    // lazily iterate "chunks" if large count
+}
+```
+
+## Generic Specification System
+
+```php
+$specification = Spec::andX(
+    new Between(from: new \DateTimeImmutable('-1 year')), // in last year
+    Spec::greaterThan('amount', 100.00), // amount > $100.00
+    Spec::sortDesc('date'), // sort by date
+);
+```
+
+## Generic Specification System
+
+Use the same _specification object_ in multiple places:
+
+```php
+// use with ORM
+$purchases = $ormPurchaseRepository->filter($specification);
+
+// use with Mongo
+$purchases = $mongoPurchaseRepository->filter($specification);
+
+// use with Collection
+$purchases = $product->getPurchases()->filter($specification);
+```
 
 # Thank You!
 
