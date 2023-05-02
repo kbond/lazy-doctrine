@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Doctrine\BatchProcessor;
 use App\Entity\Product;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -61,7 +62,9 @@ class ProductStockUpdateCommand extends BaseCommand
 
     private function efficientBatchProcess(SymfonyStyle $io): void
     {
-        $processor = $this->em->getRepository(Product::class)->all()->batchProcess();
+        $query = $this->em->getRepository(Product::class)->createQueryBuilder('p')->getQuery();
+
+        $processor = new BatchProcessor($query->toIterable(), $this->em);
 
         foreach ($io->progressIterate($processor) as $product) {
             /** @var Product $product */

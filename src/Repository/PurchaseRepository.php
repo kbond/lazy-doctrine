@@ -22,11 +22,6 @@ class PurchaseRepository extends ServiceEntityRepository
         parent::__construct($registry, Purchase::class);
     }
 
-    public function all(): Result
-    {
-        return new Result($this->createQueryBuilder('p'));
-    }
-
     public function between(?\DateTimeInterface $from = null, ?\DateTimeInterface $to = null): Result
     {
         $qb = $this->createQueryBuilder('p');

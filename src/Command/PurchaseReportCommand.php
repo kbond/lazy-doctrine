@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use App\Doctrine\BatchIterator;
+use App\Doctrine\CountableBatchIterator;
 use App\Entity\Purchase;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Tools\Pagination\Paginator;
@@ -20,8 +22,6 @@ class PurchaseReportCommand extends BaseCommand
     private const ALL = 'all';
     private const SELECT = 'select';
     private const ITERABLE = 'iterable';
-    private const LAZY = 'lazy';
-    private const BATCH_PROCESS = 'batch-process';
     private const BATCH_ITERATE = 'batch-iterate';
     private const PAGINATE = 'paginate';
     private const TYPES = [
@@ -29,8 +29,6 @@ class PurchaseReportCommand extends BaseCommand
         self::SELECT,
         self::ITERABLE,
         self::PAGINATE,
-        self::LAZY,
-        self::BATCH_PROCESS,
         self::BATCH_ITERATE,
     ];
 
@@ -54,9 +52,7 @@ class PurchaseReportCommand extends BaseCommand
         $repo = $this->em->getRepository(Purchase::class);
 
         return match($type) {
-            self::BATCH_PROCESS => $repo->all()->batchProcess(),
-            self::BATCH_ITERATE => $repo->all()->batchIterate(),
-            self::LAZY => $repo->all(),
+            self::BATCH_ITERATE => new BatchIterator($repo->createQueryBuilder('p')->getQuery()->toIterable(), $this->em),
             self::SELECT => $repo->matching(new Criteria()),
             self::ITERABLE => $repo->createQueryBuilder('p')->getQuery()->toIterable(),
             self::PAGINATE => new Paginator($repo->createQueryBuilder('p')->getQuery()),

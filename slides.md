@@ -15,34 +15,30 @@ _class: lead
 
 _by Kevin Bond_
 
+![Symfony Online](slides/sfonlinejune2023.svg)
+
 # Me?
 
 ![bg left](slides/kids.jpg)
 
 - From Ontario, Canada :canada:
 - Husband, father of three
-
-# Me?
-
-![bg left](slides/pool.jpg)
-
 - Symfony user since `1.0`
 - Symfony Core Team
 - Obsessed with clean, beautiful APIs
 - `@kbond` on GitHub/Slack
 - `@zenstruck` on Twitter
-- `@zenstruck` org on GitHub
 
 # zenstruck?
 
-- A GitHub organization where my open source packages live
+* A GitHub organization where my open source packages live
   - `zenstruck/foundry`
   - `zenstruck/browser`
   - `zenstruck/messenger-test`
   - `zenstruck/filesystem` :eyes: _(wip)_
   - `zenstruck/schedule-bundle` _(for <6.3)_
   - _..._
-- Many now co-maintained by Nicolas PHILIPPE (`@nikophil`)
+* Many now co-maintained by Nicolas PHILIPPE (`@nikophil`)
 
 # What we'll cover
 
@@ -62,8 +58,7 @@ paginate: true
 
 # Sample App
 
-- Schema:
-  ```
+```
                     +----------+       +------------+
                     | PRODUCT  |       | PURCHASE   |
                     |----------|       |------------|
@@ -72,18 +67,13 @@ paginate: true
                     | stock    |       | date       |
                     | category |       | amount     |
                     +----------+       +------------+
-  ```
-- 1,000 products, 100,000 purchases
+```
+- 1,000+ products, 100,000+ purchases
 
-# Mongo?
+# Mongo, Something Else?
 
-<!--
-_class: title-slide
--->
-
-<!--
-With some tweaks, this should/could apply to any `doctrine/persistence` implementation.
--->
+* With some tweaks, the demonstrated techniques should/could apply to any `doctrine/persistence` implementation.
+* I'm using `doctrine/orm` for the examples in this talk.
 
 # Part 1: Hydration Considerations
 
@@ -118,37 +108,11 @@ header: Teaching Doctrine to be Lazy
 * `purchase:report` command
   - Generates a report for all purchases
 
-## `ObjectRepository` (`EntityRepository`)
+## `$repo->findAll()`
 
 <!--
 header: Teaching Doctrine to be Lazy - Part 2: Batch Iterating
 -->
-
-```php
-interface ObjectRepository
-{
-    // ...
-
-    public function findAll(): array;
-
-    public function findBy(array $criteria, ...): array;
-}
-```
-
-## `ObjectRepository` (`EntityRepository`)
-
-```php
-interface ObjectRepository
-{
-    // ...
-
-    public function findAll(): iterable;
-
-    public function findBy(array $criteria, ...): iterable;
-}
-```
-
-## `$repo->findAll()`
 
 ```
  100000/100000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100%  1 sec/1 sec  166.0 MiB
@@ -196,6 +160,77 @@ interface ObjectRepository
 * _Only hydrate when you need it_ :white_check_mark:
 * _Cleanup after yourself_ :x:
 
+## Batch Utilities - Iterator
+
+* [`ocramius/doctrine-batch-utils`](https://github.com/Ocramius/DoctrineBatchUtils)
+  * Takes an ORM Query object and iterates over the result set in batches
+  * _Clear_ the `ObjectManager` after each _batch_ to free memory
+* Enhanced:
+  * Accepts _any_ `iterable` and _any_ `ObjectManager` instance
+  * _Countable_ version
+
+## `BatchIterator`
+
+```php
+final public function getIterator(): \Traversable
+{
+    $iteration = 0;
+    foreach ($this->items as $key => $value) {
+        yield $key => $value;
+
+        if (++$iteration % $this->batchSize) {
+            continue;
+        }
+        $this->em->clear();
+    }
+    $this->em->clear();
+}
+```
+
+## Use `BatchIterator`
+
+```php
+$iterator = new BatchIterator($query->toIterable(), $this->em);
+```
+
+```
+ 100000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% 2 secs 20.0 MiB
+
+ // Time: 2 secs, Queries: 1
+```
+
+* _Only hydrate what you need_ :white_check_mark:
+* _Only hydrate when you need it_ :white_check_mark:
+* _Cleanup after yourself_ :white_check_mark:
+
+## Memory Stays Constant, Time Increases
+
+200,000 purchases?
+
+```
+ 200000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% 4 secs 20.0 MiB
+
+ // Time: 4 secs, Queries: 1
+```
+
+1,000,000 purchases?
+
+```
+ 1000000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 19 secs 22.0 MiB
+
+ // Time: 19 secs, Queries: 1
+```
+
+## 1,000,000 Purchases Using `$repo->findAll()`?
+
+```
+ 1000000/1000000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% 2 secs/2 secs 1.5 GiB
+
+ // Time: 16 secs, Queries: 1
+```
+
+1.5 GiB of memory? :scream:
+
 # Part 3: Batch Processing
 
 <!--
@@ -206,12 +241,186 @@ header: Teaching Doctrine to be Lazy
 ## Batch Updating
 
 <!--
-header: Teaching Doctrine to be Lazy - Part 3: Batch Processing
+header: Teaching Doctrine to be Lazy - Part 3: Batch Processing (Update)
 -->
+
+* `product:stock-update` Command
+  * Loop through all products
+  * Update stock level from a source (ie. CSV files, API, etc)
+
+## `$repo->findAll()`
+
+```php
+foreach ($repo->findAll() as $product) {
+    /** @var Product $product */
+    $product->setStock($this->currentStockFor($product));
+    $this->em->flush();
+}
+```
+
+## `$repo->findAll()`
+
+```php
+foreach ($repo->findAll() as $product) {
+    /** @var Product $product */
+    $product->setStock($this->currentStockFor($product));
+    $this->em->flush();
+}
+```
+
+```
+ 1000/1000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% 8 secs/8 secs 16.0 MiB
+
+ // Time: 8 secs, Queries: 988
+```
+
+## `$repo->findAll()`, Delay _Flush_
+
+```php
+foreach ($repo->findAll() as $product) {
+    /** @var Product $product */
+    $product->setStock($this->currentStockFor($product));
+}
+$this->em->flush();
+```
+
+## `$repo->findAll()`, Delay _Flush_
+
+```php
+foreach ($repo->findAll() as $product) {
+    /** @var Product $product */
+    $product->setStock($this->currentStockFor($product));
+}
+$this->em->flush();
+```
+
+```
+ 1000/1000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% < 1 sec/< 1 sec 16.0 MiB
+
+ // Time: < 1 sec, Queries: 2
+```
+
+## Batch Utilities - Processor
+
+* [`ocramius/doctrine-batch-utils`](https://github.com/Ocramius/DoctrineBatchUtils)
+    * Takes an ORM Query object and iterates over the result set in batches
+    * _Flush_ **and** _clear_ the `ObjectManager` after each _batch_ to free memory and save changes
+    * Wrap everything in a transaction
+* Enhanced:
+    * Accepts _any_ `iterable` and _any_ `ObjectManager` instance
+    * _Countable_ version
+
+## Using `BatchProcessor`
+
+```php
+$processor = new BatchProcessor($query->toIterable(), $this->em);
+
+foreach ($processor as $product) {
+    /** @var Product $product */
+    $product->setStock($this->currentStockFor($product));
+}
+// no need for "flush"
+```
+
+```
+ 1000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] < 1 sec 16.0 MiB
+
+ // Time: < 1 sec, Queries: 1
+```
+
+## Using `BatchProcessor` - 10,000 Products
+
+```
+ 10000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓]  1 sec 18.0 MiB
+
+ // Time: 1 sec, Queries: 1
+```
 
 ## Batch Deleting
 
+<!--
+header: Teaching Doctrine to be Lazy - Part 3: Batch Processing (Delete)
+-->
+
+* DQL `DELETE` statement?
+* `PreRemove`/`PostRemove` events? Audit?
+* `purchase:purge` Command
+  * Delete all purchases older than 90 days
+
+## Using `BatchProcessor`
+
+```php
+$query = $this->createQueryBuilder('p')
+    ->where('p.purchasedAt <= :date')
+    ->setParameter('date', new \DateTime('-90 days'))
+    ->getQuery();
+;
+
+$processor = new BatchProcessor($query->toIterable(), $this->em);
+
+foreach ($processor as $purchase) {
+    /** @var Purchase $purchase */
+    $this->em->remove($purchase); // no need for "flush"
+}
+```
+
+## Using `BatchProcessor`
+
+```
+ 75237 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% 9 secs 18.0 MiB
+
+ // Time: 9 secs, Queries: 1
+```
+
+## Using `BatchProcessor` - 1,000,000 Purchases
+
+```
+ 753854 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100%  1 min  18.0 MiB
+
+ // Time: 1 min, Queries: 1
+```
+
 ## Batch Persisting
+
+<!--
+header: Teaching Doctrine to be Lazy - Part 3: Batch Processing (Persist)
+-->
+
+* `product:import` Command
+  * Imports products from a _source_ (ie. CSV files, API, etc)
+* :exclamation:_Requires_ enhanced `BatchProcessor`
+  * Accepts _any_ iterable
+  * We'll use a `Generator` to _yield_ `Product` instances
+
+## Using `BatchProcessor`
+
+```php
+$processor = new BatchProcessor(
+    $this->products(), // Product[] - our "source"
+    $this->em,
+);
+
+foreach ($processor as $product) {
+    /** @var Product $product */
+    $this->em->persist($product); // no need for "flush"
+}
+```
+
+## Using `BatchProcessor` - Import 1,000
+
+```
+ 1000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] < 1 sec 16.0 MiB
+
+ // Time: < 1 sec, Queries: 1
+```
+
+## Using `BatchProcessor` - Import 100,000
+
+```
+ 100000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 12 secs 16.0 MiB
+
+ // Time: 12 secs, Queries: 1
+```
 
 # Part 4: Lazy Relationships
 
@@ -251,3 +460,14 @@ header: Teaching Doctrine to be Lazy
 <!--
 header: Teaching Doctrine to be Lazy - Part 6: Future Ideas
 -->
+
+# Thank You!
+
+<!--
+header: Teaching Doctrine to be Lazy
+-->
+
+- Sample Code: [https://github.com/kbond/lazy-doctrine](https://github.com/kbond/lazy-doctrine)
+- [`zenstruck/collection`](https://github.com/zenstruck/collection)
+
+![Symfony Online w:500](slides/sfonlinejune2023.svg)

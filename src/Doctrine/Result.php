@@ -31,13 +31,13 @@ final class Result implements \IteratorAggregate, \Countable
         return (new Paginator($this->query))->count();
     }
 
-    public function batchIterate(int $size = 100): BatchCountableIterator
+    public function batchIterate(int $size = 100): CountableBatchIterator
     {
-        return new BatchCountableIterator($this, $this->query->getEntityManager(), $size);
+        return new CountableBatchIterator($this, $this->query->getEntityManager(), $size);
     }
 
-    public function batchProcess(int $size = 100): BatchCountableProcessor
+    public function batchProcess(int $size = 100): CountableBatchProcessor
     {
-        return new BatchCountableProcessor($this, $this->query->getEntityManager(), $size);
+        return new CountableBatchProcessor($this, $this->query->getEntityManager(), $size);
     }
 }

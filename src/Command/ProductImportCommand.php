@@ -73,8 +73,8 @@ class ProductImportCommand extends BaseCommand
 
     private function products(): iterable
     {
-        foreach (range(1, 1000) as $i) {
-            yield new Product(\random_int(1, 1000000000), Category::random());
+        foreach (range(1, 100000) as $i) {
+            yield new Product(\random_int(1, \PHP_INT_MAX), Category::random());
         }
     }
 }
