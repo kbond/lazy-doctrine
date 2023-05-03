@@ -53,7 +53,6 @@ paginate: true
 * Lazy batch processing
   - Updating/Deleting/Persisting
 * Lazy relationships
-* Alternate `ObjectRepository`
 * Future ideas
 
 # Sample App
@@ -69,11 +68,12 @@ paginate: true
                     +----------+       +------------+
 ```
 - 1,000+ products, 100,000+ purchases
+- Products may have 1,000's of purchases
 
-# Mongo, Something Else?
+# Mongo?
 
-* With some tweaks, the demonstrated techniques should/could apply to any `doctrine/persistence` implementation.
-* I'm using `doctrine/orm` for the examples in this talk.
+* With some tweaks, the demonstrated techniques should/could apply to any `doctrine/persistence` implementation
+* I'm using `doctrine/orm` for the examples in this talk
 
 # Part 1: Hydration Considerations
 
@@ -167,7 +167,6 @@ header: Teaching Doctrine to be Lazy - Part 2: Batch Iterating
   * _Clear_ the `ObjectManager` after each _batch_ to free memory
 * Enhanced:
   * Accepts _any_ `iterable` and _any_ `ObjectManager` instance
-  * _Countable_ version
 
 ## `BatchIterator`
 
@@ -300,6 +299,16 @@ $this->em->flush();
  // Time: < 1 sec, Queries: 2
 ```
 
+## `$repo->findAll()`, Delay _Flush_
+
+100,000 products?
+
+```
+ 100000/100000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% < 1 sec/< 1 sec 186.0 MiB
+
+ // Time: 12 secs, Queries: 2
+```
+
 ## Batch Utilities - Processor
 
 * [`ocramius/doctrine-batch-utils`](https://github.com/Ocramius/DoctrineBatchUtils)
@@ -308,7 +317,6 @@ $this->em->flush();
     * Wrap everything in a transaction
 * Enhanced:
     * Accepts _any_ `iterable` and _any_ `ObjectManager` instance
-    * _Countable_ version
 
 ## Using `BatchProcessor`
 
@@ -328,12 +336,12 @@ foreach ($processor as $product) {
  // Time: < 1 sec, Queries: 1
 ```
 
-## Using `BatchProcessor` - 10,000 Products
+## Using `BatchProcessor` - 100,000 Products
 
 ```
- 10000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓]  1 sec 18.0 MiB
+ 100000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 11 secs 22.0 MiB
 
- // Time: 1 sec, Queries: 1
+ // Time: 11 secs, Queries: 2
 ```
 
 ## Batch Deleting
@@ -343,19 +351,14 @@ header: Teaching Doctrine to be Lazy - Part 3: Batch Processing (Delete)
 -->
 
 * DQL `DELETE` statement?
-* `PreRemove`/`PostRemove` events? Audit?
+* `PreRemove`/`PostRemove` events?
 * `purchase:purge` Command
-  * Delete all purchases older than 90 days
+  * Delete all purchases older than X days
+  * Imagine a `PostRemove` event that archives the purged purchases
 
 ## Using `BatchProcessor`
 
 ```php
-$query = $this->createQueryBuilder('p')
-    ->where('p.date <= :date')
-    ->setParameter('date', new \DateTime('-90 days'))
-    ->getQuery();
-;
-
 $processor = new BatchProcessor($query->toIterable(), $this->em);
 
 foreach ($processor as $purchase) {
@@ -364,7 +367,7 @@ foreach ($processor as $purchase) {
 }
 ```
 
-## Using `BatchProcessor`
+## Using `BatchProcessor` - 100,000 Purchases
 
 ```
  75237 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100% 9 secs 18.0 MiB
@@ -388,9 +391,9 @@ header: Teaching Doctrine to be Lazy - Part 3: Batch Processing (Persist)
 
 * `product:import` Command
   * Imports products from a _source_ (ie. CSV files, API, etc)
+  * We'll use a `Generator` to _yield_ `Product` instances from our _source_
 * :exclamation:_Requires_ enhanced `BatchProcessor`
   * Accepts _any_ iterable
-  * We'll use a `Generator` to _yield_ `Product` instances
 
 ## Using `BatchProcessor`
 
@@ -567,23 +570,27 @@ foreach ($products as $product) {
 * _...it depends..._
 * fetch joins?
   * Can kill performance (I know from experience)
-  * Saving the number of queries _at all costs_ is not always the best solution
+* Saving the number of queries _at all costs_ is not always the best solution
 * If the collection has many items, hydration will be more
   expensive than the extra queries
 * Evaluate your models
 
-# Part 5: Alternate `ObjectRepository`
+# Part 5: Future Ideas
 
 <!--
-_class: title-slide
 header: Teaching Doctrine to be Lazy
 -->
 
-## `ObjectRepository` Interface
+Exploring these in [`zenstruck/collection`](https://github.com/zenstruck/collection).
+
+## Alternate _Lazy by Default_ `ObjectRepository`
 
 <!--
-header: Teaching Doctrine to be Lazy - Part 5: Alternate ObjectRepository
+_class: title-slide
+header: Teaching Doctrine to be Lazy - Part 5: Future Ideas
 -->
+
+## `ObjectRepository` Interface
 
 ```php
 /**
@@ -598,21 +605,6 @@ interface ObjectRepository extends \IteratorAggregate, \Countable
      * @return Result<T>
      */
     public function filter(mixed $specification): Result;
-}
-```
-
-## `Result` Interface
-
-```php
-/**
- * @template T of object
- * @extends \IteratorAggregate<T>
- */
-interface Result extends \IteratorAggregate, \Countable
-{
-    public function first(): T|null;
-
-    public function process(int $chunkSize = 100): BatchProcessor
 }
 ```
 
@@ -679,7 +671,7 @@ $purchases = $productsRepo->filter(
 ## Inject as a Service
 
 ```php
-public function someAction(EntityRepositoryFactory $factory)
+public function someAction(ObjectRepositoryFactory $factory)
 {
     /** @var ObjectRepository<Product> $repo */
     $repo = $factory->create(Product::class);
@@ -710,24 +702,45 @@ public function someAction(
 }
 ```
 
-# Part 6: Future Ideas
-
-<!--
-_class: title-slide
-header: Teaching Doctrine to be Lazy
--->
-
-## _More Lazy_ Doctrine Collection
-
-<!--
-header: Teaching Doctrine to be Lazy - Part 6: Future Ideas
--->
+## `Result` Interface
 
 ```php
-// override Collection::filter() to optionally accept callable(Criteria)
-$purchases = $product->getPurchases()
-    ->filter(new Between(from: new \DateTimeImmutable('-1 year'))
-);
+/**
+ * @template T of object
+ * @extends \IteratorAggregate<T>
+ */
+interface Result extends \IteratorAggregate, \Countable
+{
+    public function first(): T|null;
+    public function take(int $limit, int $offset = 0): self;
+    public function process(int $chunkSize = 100): BatchProcessor
+    public function toArray(): array;
+
+    // ...
+}
+```
+
+## Paginating the `Result`
+
+```php
+class ResultPagerfantaAdapter implements AdapterInterface
+{
+    public function getNbResults(): int
+    {
+        return $this->result->count();
+    }
+
+    public function getSlice(int $offset, int $length): array
+    {
+        return $this->result->take($length, $offset)->toArray();
+    }
+}
+```
+
+## _Lazier_ Doctrine Collection
+
+```php
+$purchase = $purchases->first(); // use slice(0, 1)[0] ?? null internally
 
 foreach ($purchases as $purchase) {
     // lazily iterate "chunks" if large count

@@ -2,12 +2,9 @@
 
 namespace App\Controller;
 
-use App\Doctrine\EntityRepository;
-use App\Doctrine\EntityRepositoryFactory;
 use App\Entity\Category;
 use App\Entity\Product;
 use App\Entity\Purchase;
-use App\Entity\Purchase\Between;
 use Doctrine\ORM\QueryBuilder;
 
 /**
@@ -15,7 +12,7 @@ use Doctrine\ORM\QueryBuilder;
  */
 final class DemoController
 {
-    public function demo1(EntityRepositoryFactory $factory)
+    public function demo1(ObjectRepositoryFactory $factory)
     {
         $repo = $factory->create(Product::class);
 
@@ -28,7 +25,7 @@ final class DemoController
         });
     }
 
-    public function demo2(EntityRepositoryFactory $factory)
+    public function demo2(ObjectRepositoryFactory $factory)
     {
         $repo = $factory->create(Purchase::class);
         $newerThan = new \DateTimeImmutable('-1 year');
@@ -47,7 +44,7 @@ final class DemoController
         $purchases = $product->getPurchases()->filter(new Between(from: new \DateTimeImmutable('-1 year')));
     }
 
-    public function future2(#[ForClass(Purchase::class)] EntityRepository $purchases)
+    public function future2(#[ForClass(Purchase::class)] ObjectRepository $purchases)
     {
         $purchases = $purchases->filter(
             Spec::andX(
