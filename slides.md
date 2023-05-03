@@ -774,4 +774,4 @@ header: Teaching Doctrine to be Lazy
 - Slides: [speakerdeck.com/kbond](https://speakerdeck.com/kbond)
 - [`zenstruck/collection`](https://github.com/zenstruck/collection)
 
-![Symfony Online w:500](slides/sfonlinejune2023.svg)
+![Symfony Online h:100](slides/sfonlinejune2023.svg)
