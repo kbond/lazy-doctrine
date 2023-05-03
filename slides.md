@@ -597,22 +597,14 @@ header: Teaching Doctrine to be Lazy - Part 5: Future Ideas
  */
 interface ObjectRepository extends \IteratorAggregate, \Countable
 {
-    public function find(mixed $specification): T|null;
-
     /**
+     * @param mixed|Criteria $specification
+     *
      * @return Result<T>
      */
     public function filter(mixed $specification): Result;
 }
 ```
-
-## ORM `ObjectRepository::find()`
-
-- `$specification` can be:
-  - `array<string,mixed>`: works like `findOneBy()`
-  - `scalar`: works like `find()`
-  - `Criteria`: works like `matching()` but returns a single result
-  - `callable(QueryBuilder,string):void`: custom query and returns a single result
 
 ## ORM `ObjectRepository::filter()`
 
@@ -635,8 +627,8 @@ $purchases = $repo->filter(
 
 ## Specification Objects
 
-While you _could_ extend this `ObjectRepository` to add your methods,
-because `filter()` and `find()` accept `callable(QueryBuilder)`,
+You _could_ extend this `ObjectRepository` to add your methods,
+but, because `filter()` accepts `callable(QueryBuilder)`,
 you can create invokable specification objects instead.
 
 ## `Between` Specification
@@ -674,9 +666,9 @@ public function someAction(ObjectRepositoryFactory $factory)
     /** @var ObjectRepository<Product> $repo */
     $repo = $factory->create(Product::class);
 
-    $product = $repo->find(6);
-    $product = $repo->find(['sku' => 'ABC123']);
-    $product = $repo->find(function(QueryBuilder $qb) {
+    $products = $repo->filter(['category' => 'books']);
+
+    $products = $repo->filter(function(QueryBuilder $qb) {
         $qb->where('...');
     });
 }
@@ -692,9 +684,9 @@ public function someAction(
     #[ForClass(Product::class)] // extends "Autowire"
     ObjectRepository $repo,
 ) {
-    $product = $repo->find(6);
-    $product = $repo->find(['sku' => 'ABC123']);
-    $product = $repo->find(function(QueryBuilder $qb) {
+    $products = $repo->filter(['category' => 'books']);
+
+    $products = $repo->filter(function(QueryBuilder $qb) {
         $qb->where('...');
     });
 }
@@ -778,7 +770,8 @@ header: Teaching Doctrine to be Lazy
 
 - `@kbond` on GitHub/Slack
 - `@zenstruck` on Twitter
-- Sample Code: [https://github.com/kbond/lazy-doctrine](https://github.com/kbond/lazy-doctrine)
+- Sample Code: [github.com/kbond/lazy-doctrine](https://github.com/kbond/lazy-doctrine)
+- Slides: [speakerdeck.com/kbond](https://speakerdeck.com/kbond)
 - [`zenstruck/collection`](https://github.com/zenstruck/collection)
 
 ![Symfony Online w:500](slides/sfonlinejune2023.svg)
