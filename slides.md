@@ -233,7 +233,6 @@ $iterator = new BatchIterator($query->toIterable(), $this->em);
 # Part 3: Batch Processing
 
 <!--
-_class: title-slide
 header: Teaching Doctrine to be Lazy
 -->
 
@@ -586,7 +585,6 @@ Exploring these in [`zenstruck/collection`](https://github.com/zenstruck/collect
 ## Alternate _Lazy by Default_ `ObjectRepository`
 
 <!--
-_class: title-slide
 header: Teaching Doctrine to be Lazy - Part 5: Future Ideas
 -->
 

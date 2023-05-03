@@ -252,6 +252,9 @@ section {
   font-family: "IBM Plex Sans";
   line-height: 1.35;
   letter-spacing: 1.25px;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
   padding: 70px;
   color: var(--dracula-foreground);
   background-color: var(--dracula-background);
@@ -335,10 +338,4 @@ section::after {
 
 section.lead footer {
   color: rgba(248, 248, 242, 0.1);
-}
-
-section.title-slide {
-  display: flex;
-  justify-content: center; /* Align horizontal */
-  align-items: center; /* Align vertical */
 }
