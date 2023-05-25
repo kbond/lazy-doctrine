@@ -567,12 +567,12 @@ foreach ($products as $product) {
 ## n+x Problem?
 
 * _...it depends..._
-* fetch joins?
-  * Can kill performance (I know from experience)
+* Evaluate your models
 * Saving the number of queries _at all costs_ is not always the best solution
 * If the collection has many items, hydration will be more
   expensive than the extra queries
-* Evaluate your models
+* fetch joins?
+  * Can kill performance (I know from experience)
 
 # Part 5: Future Ideas
 
@@ -580,7 +580,25 @@ foreach ($products as $product) {
 header: Teaching Doctrine to be Lazy
 -->
 
-Exploring these in [`zenstruck/collection`](https://github.com/zenstruck/collection).
+* Exploring some ideas in [`zenstruck/collection`](https://github.com/zenstruck/collection).
+* Alternate _lazy-by-default_ ObjectRepository
+* Specification _objects_
+* _Lazier_ Doctrine Collection
+* Generic _specification system_
+
+# Thank You!
+
+<!--
+header: Teaching Doctrine to be Lazy
+-->
+
+- `@kbond` on GitHub/Slack
+- `@zenstruck` on Twitter
+- Sample Code: [github.com/kbond/lazy-doctrine](https://github.com/kbond/lazy-doctrine)
+- Slides: [speakerdeck.com/kbond](https://speakerdeck.com/kbond)
+- [`zenstruck/collection`](https://github.com/zenstruck/collection)
+
+![Symfony Online h:100](slides/sfonlinejune2023.svg)
 
 ## Alternate _Lazy by Default_ `ObjectRepository`
 
@@ -761,17 +779,3 @@ $purchases = $mongoPurchaseRepository->filter($specification);
 // use with Collection
 $purchases = $product->getPurchases()->filter($specification);
 ```
-
-# Thank You!
-
-<!--
-header: Teaching Doctrine to be Lazy
--->
-
-- `@kbond` on GitHub/Slack
-- `@zenstruck` on Twitter
-- Sample Code: [github.com/kbond/lazy-doctrine](https://github.com/kbond/lazy-doctrine)
-- Slides: [speakerdeck.com/kbond](https://speakerdeck.com/kbond)
-- [`zenstruck/collection`](https://github.com/zenstruck/collection)
-
-![Symfony Online h:100](slides/sfonlinejune2023.svg)
