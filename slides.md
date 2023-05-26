@@ -148,18 +148,6 @@ header: Teaching Doctrine to be Lazy - Part 2: Batch Iterating
 * _Only hydrate when you need it_ :white_check_mark:
 * _Cleanup after yourself_ :x:
 
-## `Doctrine\ORM\Tools\Pagination\Paginator`
-
-```
- 100000/100000 [▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓] 100%  1 sec/1 sec  168.0 MiB
-
- // Time: 1 sec, Queries: 2
-```
-
-* _Only hydrate what you need_ :white_check_mark:
-* _Only hydrate when you need it_ :white_check_mark:
-* _Cleanup after yourself_ :x:
-
 ## Batch Utilities - Iterator
 
 * [`ocramius/doctrine-batch-utils`](https://github.com/Ocramius/DoctrineBatchUtils)
