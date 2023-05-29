@@ -542,12 +542,11 @@ foreach ($products as $product) {
   expensive than the extra queries
 * Evaluate your models and use cases
 
-## Batch Utilities Summary
+## Batch Summary
 
 * Hydration is expensive
 * The `BatchIterator`/`Processor` can keep the expense down to _time only_
-* When you have a large or unknown amount of data to process, it's better to
-  move the processing to background tasks
+* When you have a large or unknown amount of data to process, it's better to move the processing to background tasks
 
 <!--
 header: Teaching Doctrine to be Lazy
