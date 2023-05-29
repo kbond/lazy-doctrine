@@ -156,24 +156,6 @@ header: Teaching Doctrine to be Lazy - Part 2: Batch Iterating
 * Enhanced:
   * Accepts _any_ `iterable` and _any_ `ObjectManager` instance
 
-## `BatchIterator`
-
-```php
-final public function getIterator(): \Traversable
-{
-    $iteration = 0;
-    foreach ($this->items as $key => $value) {
-        yield $key => $value;
-
-        if (++$iteration % $this->batchSize) {
-            continue;
-        }
-        $this->em->clear();
-    }
-    $this->em->clear();
-}
-```
-
 ## Use `BatchIterator`
 
 ```php
@@ -555,12 +537,23 @@ foreach ($products as $product) {
 ## n+x Problem?
 
 * _...it depends..._
-* Evaluate your models
 * Saving the number of queries _at all costs_ is not always the best solution
 * If the collection has many items, hydration will be more
   expensive than the extra queries
+* Evaluate your models and use cases
 * fetch joins?
   * Can kill performance (I know from experience)
+
+## Batch Utilities Summary
+
+* Hydration is expensive
+* The `BatchIterator`/`Processor` can keep the expense down to _time only_
+* When you have a large or unknown amount of data to process, it's better to
+  move the processing to background tasks
+
+<!--
+header: Teaching Doctrine to be Lazy
+-->
 
 # Part 5: Future Ideas
 
@@ -569,24 +562,6 @@ header: Teaching Doctrine to be Lazy
 -->
 
 * Exploring some ideas in [`zenstruck/collection`](https://github.com/zenstruck/collection).
-* Alternate _lazy-by-default_ ObjectRepository
-* Specification _objects_
-* _Lazier_ Doctrine Collection
-* Generic _specification system_
-
-# Thank You!
-
-<!--
-header: Teaching Doctrine to be Lazy
--->
-
-- `@kbond` on GitHub/Slack
-- `@zenstruck` on Twitter
-- Sample Code: [github.com/kbond/lazy-doctrine](https://github.com/kbond/lazy-doctrine)
-- Slides: [speakerdeck.com/kbond](https://speakerdeck.com/kbond)
-- [`zenstruck/collection`](https://github.com/zenstruck/collection)
-
-![Symfony Online h:100](slides/sfonlinejune2023.svg)
 
 ## Alternate _Lazy by Default_ `ObjectRepository`
 
@@ -594,7 +569,7 @@ header: Teaching Doctrine to be Lazy
 header: Teaching Doctrine to be Lazy - Part 5: Future Ideas
 -->
 
-## `ObjectRepository` Interface
+## _New_ `ObjectRepository` Interface
 
 ```php
 /**
@@ -612,12 +587,30 @@ interface ObjectRepository extends \IteratorAggregate, \Countable
 }
 ```
 
+## The `Result` Interface
+
+```php
+/**
+ * @template T of object
+ * @extends \IteratorAggregate<T>
+ */
+interface Result extends \IteratorAggregate, \Countable
+{
+    public function first(): T|null;
+    public function take(int $limit, int $offset = 0): self;
+    public function process(int $chunkSize = 100): BatchProcessor
+    public function toArray(): array;
+
+    // ...
+}
+```
+
 ## ORM `ObjectRepository::filter()`
 
 - `$specification` can be:
     - `array<string,mixed>`: works like `findBy()`
     - `Criteria`: works like `matching()`
-    - `callable(QueryBuilder,string):void`: custom query
+    - `callable(QueryBuilder, string): void`: custom query
 
 ## Using the `$specification` callable
 
@@ -655,68 +648,42 @@ final class Between
 }
 ```
 
-## Use `Between` Specification
-
-```php
-/** @var Result<Purchase> $purchases */
-$purchases = $productsRepo->filter(
-    new Between('2021-01-01', '2021-12-31')
-);
-```
-
-## Inject as a Service
-
-```php
-public function someAction(ObjectRepositoryFactory $factory)
-{
-    /** @var ObjectRepository<Product> $repo */
-    $repo = $factory->create(Product::class);
-
-    $products = $repo->filter(['category' => 'books']);
-
-    $products = $repo->filter(function(QueryBuilder $qb) {
-        $qb->where('...');
-    });
-}
-```
-
 ## Inject as a Service (Symfony 6.3+)
 
 ```php
 /**
- * @param ObjectRepository<Product> $repo
+ * @param ObjectRepository<Purchase> $repo
  */
 public function someAction(
-    #[ForClass(Product::class)] // extends "Autowire"
+    // extends "Autowire" (creates repo from factory service)
+    #[ForClass(Purchase::class)]
     ObjectRepository $repo,
 ) {
-    $products = $repo->filter(['category' => 'books']);
-
-    $products = $repo->filter(function(QueryBuilder $qb) {
-        $qb->where('...');
-    });
-}
-```
-
-## `Result` Interface
-
-```php
-/**
- * @template T of object
- * @extends \IteratorAggregate<T>
- */
-interface Result extends \IteratorAggregate, \Countable
-{
-    public function first(): T|null;
-    public function take(int $limit, int $offset = 0): self;
-    public function process(int $chunkSize = 100): BatchProcessor
-    public function toArray(): array;
+    $products = $repo->filter(new Between('2021-01-01', '2021-12-31'));
 
     // ...
 }
 ```
 
+# Thank You!
+
+<!--
+header: Teaching Doctrine to be Lazy
+-->
+
+- `@kbond` on GitHub/Slack
+- `@zenstruck` on Twitter
+- Sample Code: [github.com/kbond/lazy-doctrine](https://github.com/kbond/lazy-doctrine)
+- Slides: [speakerdeck.com/kbond](https://speakerdeck.com/kbond)
+- [`zenstruck/collection`](https://github.com/zenstruck/collection)
+
+![Symfony Online h:100](slides/sfonlinejune2023.svg)
+
 ## Paginating the `Result`
+
+<!--
+header: Teaching Doctrine to be Lazy - Part 5: Future Ideas
+-->
 
 ```php
 class ResultPagerfantaAdapter implements AdapterInterface
