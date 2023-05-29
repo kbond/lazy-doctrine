@@ -541,8 +541,6 @@ foreach ($products as $product) {
 * If the collection has many items, hydration will be more
   expensive than the extra queries
 * Evaluate your models and use cases
-* fetch joins?
-  * Can kill performance (I know from experience)
 
 ## Batch Utilities Summary
 
