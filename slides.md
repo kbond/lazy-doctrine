@@ -152,8 +152,8 @@ header: Teaching Doctrine to be Lazy - Part 2: Batch Iterating
 - [`ocramius/doctrine-batch-utils`](https://github.com/Ocramius/DoctrineBatchUtils)
   - Takes an ORM Query object and iterates over the result set in batches
   - _Clear_ the `ObjectManager` after each _batch_ to free memory
--Enhanced:
-  -Accepts _any_ `iterable` and _any_ `ObjectManager` instance
+- Enhanced:
+  - Accepts _any_ `iterable` and _any_ `ObjectManager` instance
 
 ## Use `BatchIterator`
 
