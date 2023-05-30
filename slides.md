@@ -25,7 +25,6 @@ _by Kevin Bond_
 - Husband, father of three
 - Symfony user since `1.0`
 - Symfony Core Team
-- Obsessed with clean, beautiful APIs
 - `@kbond` on GitHub/Slack
 - `@zenstruck` on Twitter
 
