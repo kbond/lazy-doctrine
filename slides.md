@@ -102,9 +102,9 @@ header: Teaching Doctrine to be Lazy - Part 1: Hydration Considerations
 header: Teaching Doctrine to be Lazy
 -->
 
-* _Read-only_
-* Use SQL?
-* `purchase:report` command
+- _Read-only_
+- Use SQL?
+- `purchase:report` command
   - Generates a report for all purchases
 
 ## `$repo->findAll()`
@@ -119,9 +119,9 @@ header: Teaching Doctrine to be Lazy - Part 2: Batch Iterating
  // Time: 2 secs, Queries: 1
 ```
 
-* _Only hydrate what you need_ :white_check_mark:
-* _Only hydrate when you need it_ :x:
-* _Cleanup after yourself_ :x:
+- _Only hydrate what you need_ :white_check_mark:
+- _Only hydrate when you need it_ :x:
+- _Cleanup after yourself_ :x:
 
 ## `$repo->matching(new Criteria())`
 
@@ -131,9 +131,9 @@ header: Teaching Doctrine to be Lazy - Part 2: Batch Iterating
  // Time: 1 sec, Queries: 2
 ```
 
-* _Only hydrate what you need_ :white_check_mark:
-* _Only hydrate when you need it_ :x:
-* _Cleanup after yourself_ :x:
+- _Only hydrate what you need_ :white_check_mark:
+- _Only hydrate when you need it_ :x:
+- _Cleanup after yourself_ :x:
 
 ## `Doctrine\ORM\Query::toIterable()`
 
@@ -143,17 +143,17 @@ header: Teaching Doctrine to be Lazy - Part 2: Batch Iterating
  // Time: 2 secs, Queries: 1
 ```
 
-* _Only hydrate what you need_ :white_check_mark:
-* _Only hydrate when you need it_ :white_check_mark:
-* _Cleanup after yourself_ :x:
+- _Only hydrate what you need_ :white_check_mark:
+- _Only hydrate when you need it_ :white_check_mark:
+- _Cleanup after yourself_ :x:
 
 ## Batch Utilities - Iterator
 
-* [`ocramius/doctrine-batch-utils`](https://github.com/Ocramius/DoctrineBatchUtils)
-  * Takes an ORM Query object and iterates over the result set in batches
-  * _Clear_ the `ObjectManager` after each _batch_ to free memory
-* Enhanced:
-  * Accepts _any_ `iterable` and _any_ `ObjectManager` instance
+- [`ocramius/doctrine-batch-utils`](https://github.com/Ocramius/DoctrineBatchUtils)
+  - Takes an ORM Query object and iterates over the result set in batches
+  - _Clear_ the `ObjectManager` after each _batch_ to free memory
+-Enhanced:
+  -Accepts _any_ `iterable` and _any_ `ObjectManager` instance
 
 ## Use `BatchIterator`
 
@@ -167,9 +167,9 @@ $iterator = new BatchIterator($query->toIterable(), $this->em);
  // Time: 2 secs, Queries: 1
 ```
 
-* _Only hydrate what you need_ :white_check_mark:
-* _Only hydrate when you need it_ :white_check_mark:
-* _Cleanup after yourself_ :white_check_mark:
+- _Only hydrate what you need_ :white_check_mark:
+- _Only hydrate when you need it_ :white_check_mark:
+- _Cleanup after yourself_ :white_check_mark:
 
 ## Memory Stays Constant, Time Increases
 
@@ -211,9 +211,9 @@ header: Teaching Doctrine to be Lazy
 header: Teaching Doctrine to be Lazy - Part 3: Batch Processing (Update)
 -->
 
-* `product:stock-update` Command
-  * Loop through all products
-  * Update stock level from a source (ie. CSV files, API, etc)
+- `product:stock-update` Command
+  - Loop through all products
+  - Update stock level from a source (ie. CSV files, API, etc)
 
 ## `$repo->findAll()`
 
@@ -279,12 +279,12 @@ $this->em->flush();
 
 ## Batch Utilities - Processor
 
-* [`ocramius/doctrine-batch-utils`](https://github.com/Ocramius/DoctrineBatchUtils)
-    * Takes an ORM Query object and iterates over the result set in batches
-    * _Flush_ **and** _clear_ the `ObjectManager` after each _batch_ to free memory and save changes
-    * Wrap everything in a transaction
-* Enhanced:
-    * Accepts _any_ `iterable` and _any_ `ObjectManager` instance
+- [`ocramius/doctrine-batch-utils`](https://github.com/Ocramius/DoctrineBatchUtils)
+    - Takes an ORM Query object and iterates over the result set in batches
+    - _Flush_ **and** _clear_ the `ObjectManager` after each _batch_ to free memory and save changes
+    - Wrap everything in a transaction
+- Enhanced:
+    - Accepts _any_ `iterable` and _any_ `ObjectManager` instance
 
 ## Using `BatchProcessor`
 
@@ -318,11 +318,11 @@ foreach ($processor as $product) {
 header: Teaching Doctrine to be Lazy - Part 3: Batch Processing (Delete)
 -->
 
-* DQL `DELETE` statement?
-* `PreRemove`/`PostRemove` events?
-* `purchase:purge` Command
-  * Delete all purchases older than X days
-  * Imagine a `PostRemove` event that archives the purged purchases
+- DQL `DELETE` statement?
+- `PreRemove`/`PostRemove` events?
+- `purchase:purge` Command
+  - Delete all purchases older than X days
+  - Imagine a `PostRemove` event that archives the purged purchases
 
 ## Using `BatchProcessor`
 
@@ -357,11 +357,11 @@ foreach ($processor as $purchase) {
 header: Teaching Doctrine to be Lazy - Part 3: Batch Processing (Persist)
 -->
 
-* `product:import` Command
-  * Imports products from a _source_ (ie. CSV files, API, etc)
-  * We'll use a `Generator` to _yield_ `Product` instances from our _source_
-* :exclamation:_Requires_ enhanced `BatchProcessor`
-  * Accepts _any_ iterable
+- `product:import` Command
+  - Imports products from a _source_ (ie. CSV files, API, etc)
+  - We'll use a `Generator` to _yield_ `Product` instances from our _source_
+- :exclamation:_Requires_ enhanced `BatchProcessor`
+  - Accepts _any_ iterable
 
 ## Using `BatchProcessor`
 
@@ -399,12 +399,12 @@ foreach ($processor as $product) {
 header: Teaching Doctrine to be Lazy
 -->
 
-* `product:report` Command
-  * Loop over all products (using our `BatchIterator`)
-  * For each product
-    * Fetch details on the most recent purchase
-    * Fetch number of purchases in the last 30 days
-  * Some products have 10,000+ purchases
+- `product:report` Command
+  - Loop over all products (using our `BatchIterator`)
+  - For each product
+    - Fetch details on the most recent purchase
+    - Fetch number of purchases in the last 30 days
+  - Some products have 10,000+ purchases
 
 ## Command Code
 
@@ -535,17 +535,17 @@ foreach ($products as $product) {
 
 ## n+x Problem?
 
-* _...it depends..._
-* Saving the number of queries _at all costs_ is not always the best solution
-* If the collection has many items, hydration will be more
+- _...it depends..._
+- Saving the number of queries _at all costs_ is not always the best solution
+- If the collection has many items, hydration will be more
   expensive than the extra queries
-* Evaluate your models and use cases
+- Evaluate your models and use cases
 
 ## Batch Summary
 
-* Hydration is expensive
-* The `BatchIterator`/`Processor` can keep the expense down to _time only_
-* When you have a large or unknown amount of data to process, it's better to move the processing to background tasks
+- Hydration is expensive
+- The `BatchIterator`/`Processor` can keep the expense down to _time only_
+- When you have a large or unknown amount of data to process, it's better to move the processing to background tasks
 
 <!--
 header: Teaching Doctrine to be Lazy
@@ -557,7 +557,7 @@ header: Teaching Doctrine to be Lazy
 header: Teaching Doctrine to be Lazy
 -->
 
-* Exploring some ideas in [`zenstruck/collection`](https://github.com/zenstruck/collection).
+- Exploring some ideas in [`zenstruck/collection`](https://github.com/zenstruck/collection).
 
 ## Alternate _Lazy by Default_ `ObjectRepository`
 
